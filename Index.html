@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Stream</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Anime Stream</h1>
+        <div class="profile-icon">
+            <button id="toggleView">Admin</button>
+        </div>
+    </header>
+    <main id="userView">
+        <section class="featured">
+            <div class="featured-image" id="featuredImage"></div>
+            <div class="featured-info">
+                <h2 id="featuredTitle">No Featured Video</h2>
+                <div class="genres" id="featuredGenres"></div>
+                <div class="rating-year">
+                    <span id="featuredRating"></span>
+                    <span id="featuredSeason"></span>
+                    <span id="featuredYear">0000</span>
+                </div>
+            </div>
+        </section>
+        <section class="category-section">
+            <h3>Recently Added</h3>
+            <div class="horizontal-scroll" id="recentlyAdded"></div>
+        </section>
+        <section class="category-section">
+            <div class="category-header">
+                <h3>Action</h3>
+                <a href="#" onclick="filterCategory('Action'); return false;">See all</a>
+            </div>
+            <div class="horizontal-scroll" id="actionVideos"></div>
+        </section>
+        <section class="category-section">
+            <div class="category-header">
+                <h3>Romance</h3>
+                <a href="#" onclick="filterCategory('Romance'); return false;">See all</a>
+            </div>
+            <div class="horizontal-scroll" id="romanceVideos"></div>
+        </section>
+    </main>
+    <main id="tvShowsView" style="display: none;">
+        <div class="category-selector">
+            <button class="category-btn active" onclick="selectTvCategory('Lifestyle')">Lifestyle</button>
+            <button class="category-btn" onclick="selectTvCategory('Anime & Gaming')">Anime & Gaming</button>
+            <button class="category-btn" onclick="selectTvCategory('Nature & Travel')">Nature & Travel</button>
+            <button class="category-btn" onclick="selectTvCategory('History & Science')">History & Science</button>
+        </div>
+        <section class="tv-category-section" id="tvCategories">
+            <!-- Categories will be dynamically populated -->
+        </section>
+    </main>
+    <main id="adminView" style="display: none;">
+        <h2>Admin Panel</h2>
+        <div class="admin-menu">
+            <button id="addVideoMenu" class="admin-menu-btn active" onclick="showAdminSection('addVideoSection')">Add Video</button>
+            <button id="videoManagementMenu" class="admin-menu-btn" onclick="showAdminSection('videoManagementSection')">Video Management</button>
+            <button id="requestedMoviesMenu" class="admin-menu-btn" onclick="showAdminSection('requestedMoviesSection')">Requested Movies</button>
+        </div>
+        <section id="addVideoSection" class="admin-section">
+            <h3>Add New Video</h3>
+            <form id="videoForm">
+                <label>Title:</label>
+                <input type="text" id="title" required>
+                <label>Type:</label>
+                <select id="videoType" required onchange="toggleSeasonField()">
+                    <option value="Series">Series</option>
+                    <option value="Movie">Movie</option>
+                </select>
+                <label>Genres (Hold Ctrl/Cmd to select multiple):</label>
+                <select id="genres" multiple required>
+                    <option value="Action">Action</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Drama">Drama</option>
+                </select>
+                <label>Embed Code (Movie):</label>
+                <textarea id="embedCode" required></textarea>
+                <div id="seasonField">
+                    <label>Number of Seasons:</label>
+                    <input type="number" id="numSeasons" min="1" step="1" value="1" onchange="updateSeasonInputs()">
+                </div>
+                <div id="seasonsInput"></div>
+                <label>Rating (0.0 to 10.0):</label>
+                <input type="number" id="rating" min="0" max="10" step="0.1" required>
+                <label>Year:</label>
+                <input type="number" id="year" min="1900" max="2025" step="1" required>
+                <label>Banner Image URL:</label>
+                <input type="text" id="bannerImage">
+                <label>Thumbnail Image URL:</label>
+                <input type="text" id="thumbnailImage">
+                <div id="formError"></div>
+                <button type="submit">Add Video</button>
+            </form>
+        </section>
+        <section id="videoManagementSection" class="admin-section" style="display: none;">
+            <h3>Manage Videos</h3>
+            <ul id="videoList"></ul>
+        </section>
+        <section id="requestedMoviesSection" class="admin-section" style="display: none;">
+            <h3>Requested Movies</h3>
+            <ul id="animeRequestList"></ul>
+        </section>
+    </main>
+    <div id="passwordModal" class="modal">
+        <div class="modal-content password-modal-content">
+            <span class="close" onclick="closePasswordModal()">×</span>
+            <h2>Admin Login</h2>
+            <form id="passwordForm">
+                <label>Password:</label>
+                <input type="password" id="adminPassword" required>
+                <div id="passwordError"></div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeVideoModal()">×</span>
+            <div class="modal-banner" id="modalBanner"></div>
+            <div class="modal-info">
+                <h2 id="modalTitle"></h2>
+                <div class="details-row">
+                    <div class="genres" id="modalGenres"></div>
+                    <div class="rating-year">
+                        <span id="modalRating"></span>
+                        <span id="modalSeason"></span>
+                        <span id="modalYear"></span>
+                    </div>
+                </div>
+                <button id="seasonToggleButton" class="season-toggle-button" style="display: none;">Select Season</button>
+                <div id="seasonSlide" class="season-slide">
+                    <div id="seasonOptions" class="season-options"></div>
+                </div>
+                <button id="episodeToggleButton" class="season-toggle-button" style="display: none;">Select Episode</button>
+                <div id="episodeSlide" class="season-slide">
+                    <div id="episodeOptions" class="season-options"></div>
+                </div>
+                <button id="playButton" class="play-button">Play Now</button>
+            </div>
+            <div id="videoPlayer"></div>
+        </div>
+    </div>
+    <div id="editModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <span class="close" onclick="closeEditModal()">×</span>
+            <h3>Edit Video</h3>
+            <div id="editFormContainer"></div>
+        </div>
+    </div>
+    <div id="searchModal" class="search-modal">
+        <div class="search-modal-content">
+            <span class="close" onclick="closeSearchModal()">×</span>
+            <h2>Search Anime</h2>
+            <div class="search-input-container">
+                <input type="text" id="searchInput" placeholder="Search for an anime..." oninput="searchAnime()">
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <span class="close" onclick="closeSettingsModal()">×</span>
+            <h2>Settings</h2>
+            <section class="profile-section">
+                <h3>Profile</h3>
+                <div class="profile-info">
+                    <p><strong>Name:</strong> <span id="profileName">User Name</span></p>
+                    <p><strong>Email:</strong> <span id="profileEmail">user@example.com</span></p>
+                </div>
+            </section>
+            <section class="request-anime-section">
+                <h3>Request Anime</h3>
+                <form id="requestAnimeForm">
+                    <label>Anime Title:</label>
+                    <input type="text" id="requestTitle" required>
+                    <label>Comments (Optional):</label>
+                    <textarea id="requestComments"></textarea>
+                    <div id="requestError"></div>
+                    <button type="submit">Submit Request</button>
+                </form>
+            </section>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <a href="#" id="homeButton" class="active" onclick="showView('userView'); return false;">
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 576 512">
+                    <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/>
+                </svg>
+            </span>
+            Home
+        </a>
+        <a href="#" id="searchButton" onclick="openSearchModal(); return false;">
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 512 512">
+                    <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                </svg>
+            </span>
+            Search
+        </a>
+        <a href="#" id="tvShowsButton" onclick="showView('tvShowsView'); return false;">
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tv-fill" viewBox="0 0 16 16">
+                    <path d="M2.5 13.5A.5.5 0 0 1 3 13h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5M2 2h12s2 0 2 2v6s0 2-2 2H2s-2 0-2-2V4s0-2 2-2"/>
+                </svg>
+            </span>
+            TV Shows
+        </a>
+        <a href="#" id="settingsButton" onclick="openSettingsModal(); return false;">
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 512 512">
+                    <path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/>
+                </svg>
+            </span>
+            Settings
+        </a>
+    </nav>
+    <script src="script.js"></script>
+</body>
+</html>
