@@ -64,6 +64,10 @@ let videos = [
     }
 ];
 
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://pcwvvsdytizsnalzzznl.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 let animeRequests = [];
 let currentSeason = 1;
 let currentEpisode = 1;
