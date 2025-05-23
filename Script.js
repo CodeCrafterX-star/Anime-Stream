@@ -56,218 +56,334 @@ let videos = [
         type: "Movie",
         category: "Romance",
         embedCode: '<iframe src="https://www.youtube.com/embed/xU47nhruN-Q" frameborder="0" allowfullscreen></iframe>',
-        seasons: null,
-        bannerImage: "https://i.postimg.cc/xT3nNFfm/Your-Name-poster.png",
-        thumbnailImage: "https://i.postimg.cc/xT3nNFfm/Your-Name-poster.png",
+        bannerImage: "https://i.postimg.cc/7Z5qX0dQ/images-10.jpg",
+        thumbnailImage: "https://i.postimg.cc/7Z5qX0dQ/images-10.jpg",
         rating: 8.4,
         year: 2016,
         genres: ["Romance", "Drama", "Fantasy"]
-    },
-    {
-        id: 3,
-        title: "Solo Leveling: ReAwakening",
-        type: "Series",
-        category: "Action",
-        seasons: [
-            {
-                seasonNumber: 1,
-                episodes: [
-                    { 
-                        episodeNumber: 1, 
-                        name: "I'm Used to It", 
-                        thumbnail: "https://i.postimg.cc/HLSq4fRJ/images-10.jpg",
-                        embedCode: '<iframe width="640" height="360" src="https://short.icu/OYIN3lmsN" frameborder="0" scrolling="0" allowfullscreen></iframe>',
-                        duration: "24m"
-                    },
-                    { 
-                        episodeNumber: 2, 
-                        name: "A New Challenge", 
-                        thumbnail: "https://i.postimg.cc/wMbYqnc8/images-11.jpg",
-                        embedCode: '<iframe src="https://www.youtube.com/embed/another-episode-id-3" frameborder="0" allowfullscreen></iframe>',
-                        duration: "24m"
-                    }
-                ]
-            },
-            {
-                seasonNumber: 2,
-                episodes: [
-                    { 
-                        episodeNumber: 1, 
-                        name: "ReAwakening Begins", 
-                        thumbnail: "https://i.postimg.cc/rmFHDQp8/images-12.jpg",
-                        embedCode: '<iframe src="https://www.youtube.com/embed/another-video-id" frameborder="0" allowfullscreen></iframe>',
-                        duration: "24m"
-                    },
-                    { 
-                        episodeNumber: 2, 
-                        name: "The Next Level", 
-                        thumbnail: "https://i.postimg.cc/J79WFCnZ/images-13.jpg",
-                        embedCode: '<iframe src="https://www.youtube.com/embed/another-episode-id-4" frameborder="0" allowfullscreen></iframe>',
-                        duration: "24m"
-                    }
-                ]
-            }
-        ],
-        bannerImage: "https://i.postimg.cc/Df1sfnfz/images-7.jpg",
-        thumbnailImage: "https://i.postimg.cc/Df1sfnfz/images-7.jpg",
-        rating: 9.0,
-        year: 2024,
-        genres: ["Action", "Adventure", "Fantasy"]
     }
 ];
 
 let animeRequests = [];
-let episodeProgress = {};
-const ADMIN_PASSWORD = "admin123"; // Hardcoded for demo; use secure methods in production
+let currentSeason = 1;
+let currentEpisode = 1;
+let selectedVideo = null;
 
-// TV Shows Data
-const tvCategories = {
-    "Lifestyle": [
-        { name: "M3U8", thumbnail: "https://i.postimg.cc/7hLqP5kQ/lifestyle1.jpg" },
-        { name: "FTV", thumbnail: "https://i.postimg.cc/3J9qW7pL/lifestyle2.jpg" },
-        { name: "Fashion TV", thumbnail: "https://i.postimg.cc/9FzL5q2Q/lifestyle3.jpg" }
-    ],
-    "Anime & Gaming": [
-        { name: "Anime Hub", thumbnail: "https://i.postimg.cc/NGqJ5kYQ/anime1.jpg" },
-        { name: "Gaming TV", thumbnail: "https://i.postimg.cc/4dXqYkX3/anime2.jpg" },
-        { name: "Toonami", thumbnail: "https://i.postimg.cc/7ZqW5kYQ/anime3.jpg" }
-    ],
-    "Nature & Travel": [
-        { name: "Nat Geo", thumbnail: "https://i.postimg.cc/5yqW5kYQ/nature1.jpg" },
-        { name: "Travel XP", thumbnail: "https://i.postimg.cc/NGqJ5kYQ/nature2.jpg" },
-        { name: "Discovery", thumbnail: "https://i.postimg.cc/4dXqYkX3/nature3.jpg" }
-    ],
-    "History & Science": [
-        { name: "History TV", thumbnail: "https://i.postimg.cc/7ZqW5kYQ/history1.jpg" },
-        { name: "Science Channel", thumbnail: "https://i.postimg.cc/5yqW5kYQ/history2.jpg" },
-        { name: "PBS", thumbnail: "https://i.postimg.cc/NGqJ5kYQ/history3.jpg" }
-    ]
-};
-
-// Utility Functions
 function getElement(id) {
     return document.getElementById(id);
 }
 
-function safeLocalStorageSet(key, value) {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-        console.error("LocalStorage error:", e);
-        if (e.name === "QuotaExceededError") {
-            alert("Local storage quota exceeded. Please clear some data.");
-        }
+function initializeApp() {
+    displayFeaturedVideo();
+    displayCategoryVideos();
+    initializeTvShows();
+    initializeAdminPanel();
+    setupEventListeners();
+}
+
+function displayFeaturedVideo() {
+    const featuredVideo = videos[Math.floor(Math.random() * videos.length)];
+    const featuredImage = getElement('featuredImage');
+    const featuredTitle = getElement('featuredTitle');
+    const featuredGenres = getElement('featuredGenres');
+    const featuredRating = getElement('featuredRating');
+    const featuredSeason = getElement('featuredSeason');
+    const featuredYear = getElement('featuredYear');
+
+    if (featuredVideo) {
+        featuredImage.style.backgroundImage = `url(${featuredVideo.bannerImage})`;
+        featuredTitle.textContent = featuredVideo.title;
+        featuredGenres.innerHTML = featuredVideo.genres.map(genre => `<span>${genre}</span>`).join('');
+        featuredRating.innerHTML = `<svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ${featuredVideo.rating}`;
+        featuredSeason.textContent = featuredVideo.type === 'Series' ? `${featuredVideo.seasons.length} Season${featuredVideo.seasons.length > 1 ? 's' : ''}` : '';
+        featuredYear.textContent = featuredVideo.year;
+        featuredImage.onclick = () => openVideoModal(featuredVideo);
     }
 }
 
-function safeLocalStorageGet(key, defaultValue) {
-    try {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : defaultValue;
-    } catch (e) {
-        console.error("LocalStorage read error:", e);
-        return defaultValue;
-    }
-}
-
-function isValidUrl(url) {
-    try {
-        new URL(url);
-        return true;
-    } catch (_) {
-        return false;
-    }
-}
-
-function sanitizeInput(input) {
-    const div = document.createElement('div');
-    div.textContent = input;
-    let sanitized = div.innerHTML;
-    // Remove <script> tags to prevent XSS
-    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    return sanitized;
-}
-
-// Load Data on Start
-function loadData() {
-    animeRequests = safeLocalStorageGet('animeRequests', []);
-    episodeProgress = safeLocalStorageGet('episodeProgress', {});
-    renderVideos();
-    renderAnimeRequests();
-    renderTvCategories("Lifestyle");
-}
-
-// Render Videos
-function renderVideos() {
+function displayCategoryVideos() {
     const recentlyAdded = getElement('recentlyAdded');
     const actionVideos = getElement('actionVideos');
     const romanceVideos = getElement('romanceVideos');
-    const videoList = getElement('videoList');
-
-    if (!recentlyAdded || !actionVideos || !romanceVideos || !videoList) {
-        console.error("Required DOM elements not found");
-        return;
-    }
 
     recentlyAdded.innerHTML = '';
     actionVideos.innerHTML = '';
     romanceVideos.innerHTML = '';
-    videoList.innerHTML = '';
 
-    // Featured Video (latest added)
-    const latestVideo = videos[videos.length - 1];
-    if (latestVideo) {
-        const featuredImage = getElement('featuredImage');
-        const featuredTitle = getElement('featuredTitle');
-        const featuredGenres = getElement('featuredGenres');
-        const featuredRating = getElement('featuredRating');
-        const featuredSeason = getElement('featuredSeason');
-        const featuredYear = getElement('featuredYear');
-
-        if (featuredImage && featuredTitle && featuredGenres && featuredRating && featuredSeason && featuredYear) {
-            featuredImage.style.backgroundImage = `url('${isValidUrl(latestVideo.bannerImage) ? latestVideo.bannerImage : 'https://via.placeholder.com/300x450'}')`;
-            featuredTitle.textContent = latestVideo.title;
-            featuredGenres.innerHTML = latestVideo.genres.map(genre => `<span>${sanitizeInput(genre)}</span>`).join('');
-            featuredRating.innerHTML = `⭐ ${latestVideo.rating.toFixed(1)}`;
-            featuredSeason.innerHTML = latestVideo.type === 'Series' ? `Seasons: ${latestVideo.seasons.length}` : '';
-            featuredYear.textContent = latestVideo.year;
-
-            featuredImage.onclick = () => openVideoModal(latestVideo);
+    videos.forEach(video => {
+        const thumbnail = createThumbnail(video);
+        if (video.category === 'Action') {
+            actionVideos.appendChild(thumbnail);
+        } else if (video.category === 'Romance') {
+            romanceVideos.appendChild(thumbnail);
         }
+        recentlyAdded.appendChild(thumbnail.cloneNode(true));
+    });
+}
+
+function createThumbnail(video) {
+    const thumbnail = document.createElement('div');
+    thumbnail.className = 'thumbnail';
+    thumbnail.style.backgroundImage = `url(${video.thumbnailImage})`;
+    thumbnail.innerHTML = `<div class="play-overlay">▶</div>`;
+    thumbnail.onclick = () => openVideoModal(video);
+    return thumbnail;
+}
+
+function filterCategory(category) {
+    const filteredVideos = videos.filter(video => video.genres.includes(category));
+    openSearchModal();
+    const searchResults = getElement('searchResults');
+    searchResults.innerHTML = '';
+    filteredVideos.forEach(video => {
+        const resultItem = createSearchResultItem(video);
+        searchResults.appendChild(resultItem);
+    });
+}
+
+function initializeTvShows() {
+    selectTvCategory('Lifestyle');
+}
+
+function selectTvCategory(category) {
+    const buttons = document.querySelectorAll('.category-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    const activeButton = Array.from(buttons).find(btn => btn.textContent === category);
+    if (activeButton) activeButton.classList.add('active');
+
+    const tvCategories = getElement('tvCategories');
+    tvCategories.innerHTML = '';
+
+    const channels = getChannelsForCategory(category);
+    const section = document.createElement('section');
+    section.className = 'tv-category-section';
+    section.innerHTML = `
+        <div class="tv-category-header">
+            <h3>${category}</h3>
+            <a href="#" onclick="filterCategory('${category}'); return false;">See all</a>
+        </div>
+        <div class="channel-grid"></div>
+    `;
+    tvCategories.appendChild(section);
+
+    const channelGrid = section.querySelector('.channel-grid');
+    channels.forEach(channel => {
+        const tile = document.createElement('div');
+        tile.className = 'channel-tile';
+        tile.style.backgroundImage = `url(${channel.thumbnail})`;
+        tile.innerHTML = `<span>${channel.name}</span>`;
+        tile.onclick = () => openVideoModal(channel);
+        channelGrid.appendChild(tile);
+    });
+}
+
+function getChannelsForCategory(category) {
+    const channelData = {
+        'Lifestyle': [
+            { name: 'Cooking Show', thumbnail: 'https://i.postimg.cc/7Z5qX0dQ/images-10.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-lifestyle" frameborder="0" allowfullscreen></iframe>' },
+            { name: 'Fitness TV', thumbnail: 'https://i.postimg.cc/BvWLZVMK/images-9.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-fitness" frameborder="0" allowfullscreen></iframe>' }
+        ],
+        'Anime & Gaming': [
+            { name: 'Anime Hub', thumbnail: 'https://i.postimg.cc/qR1vKbXQ/The-Colossal-Titan-outside-Shiganshina.png', embedCode: '<iframe src="https://www.youtube.com/embed/sample-anime" frameborder="0" allowfullscreen></iframe>' },
+            { name: 'Gaming Live', thumbnail: 'https://i.postimg.cc/T2HPYsP3/images-14.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-gaming" frameborder="0" allowfullscreen></iframe>' }
+        ],
+        'Nature & Travel': [
+            { name: 'Wild Explorer', thumbnail: 'https://i.postimg.cc/Bt99PHyM/images-15.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-nature" frameborder="0" allowfullscreen></iframe>' },
+            { name: 'Travel Vlogs', thumbnail: 'https://i.postimg.cc/7Z5qX0dQ/images-10.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-travel" frameborder="0" allowfullscreen></iframe>' }
+        ],
+        'History & Science': [
+            { name: 'History Channel', thumbnail: 'https://i.postimg.cc/BvWLZVMK/images-9.jpg', embedCode: '<iframe src="https://www.youtube.com/embed/sample-history" frameborder="0" allowfullscreen></iframe>' },
+            { name: 'Science Now', thumbnail: 'https://i.postimg.cc/qR1vKbXQ/The-Colossal-Titan-outside-Shiganshina.png', embedCode: '<iframe src="https://www.youtube.com/embed/sample-science" frameborder="0" allowfullscreen></iframe>' }
+        ]
+    };
+    return channelData[category] || [];
+}
+
+function initializeAdminPanel() {
+    updateVideoList();
+    updateAnimeRequestList();
+}
+
+function setupEventListeners() {
+    const toggleViewBtn = getElement('toggleView');
+    const videoForm = getElement('videoForm');
+    const passwordForm = getElement('passwordForm');
+    const requestAnimeForm = getElement('requestAnimeForm');
+
+    toggleViewBtn.onclick = () => {
+        const currentView = getElement('adminView').style.display === 'none' ? 'user' : 'admin';
+        if (currentView === 'user') {
+            openPasswordModal();
+        } else {
+            showView('userView');
+            toggleViewBtn.textContent = 'Admin';
+        }
+    };
+
+    videoForm.onsubmit = (e) => {
+        e.preventDefault();
+        addVideo();
+    };
+
+    passwordForm.onsubmit = (e) => {
+        e.preventDefault();
+        checkAdminPassword();
+    };
+
+    requestAnimeForm.onsubmit = (e) => {
+        e.preventDefault();
+        submitAnimeRequest();
+    };
+}
+
+function openPasswordModal() {
+    getElement('passwordModal').style.display = 'block';
+}
+
+function closePasswordModal() {
+    getElement('passwordModal').style.display = 'none';
+    getElement('adminPassword').value = '';
+    getElement('passwordError').style.display = 'none';
+}
+
+function checkAdminPassword() {
+    const password = getElement('adminPassword').value;
+    const passwordError = getElement('passwordError');
+    if (password === 'admin123') {
+        showView('adminView');
+        getElement('toggleView').textContent = 'User';
+        closePasswordModal();
+    } else {
+        passwordError.textContent = 'Incorrect password. Please try again.';
+        passwordError.style.display = 'block';
+    }
+}
+
+function showView(viewId) {
+    const views = ['userView', 'tvShowsView', 'adminView'];
+    views.forEach(view => {
+        getElement(view).style.display = view === viewId ? 'block' : 'none';
+    });
+
+    const navButtons = document.querySelectorAll('.bottom-nav a');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    if (viewId === 'userView') {
+        getElement('homeButton').classList.add('active');
+    } else if (viewId === 'tvShowsView') {
+        getElement('tvShowsButton').classList.add('active');
+    }
+}
+
+function addVideo() {
+    const title = getElement('title').value;
+    const videoType = getElement('videoType').value;
+    const genres = Array.from(getElement('genres').selectedOptions).map(option => option.value);
+    const embedCode = getElement('embedCode').value;
+    const rating = parseFloat(getElement('rating').value);
+    const year = parseInt(getElement('year').value);
+    const bannerImage = getElement('bannerImage').value;
+    const thumbnailImage = getElement('thumbnailImage').value;
+    const formError = getElement('formError');
+
+    if (!title || !genres.length || !embedCode || isNaN(rating) || isNaN(year)) {
+        formError.textContent = 'Please fill in all required fields correctly.';
+        formError.style.display = 'block';
+        return;
     }
 
-    // Recently Added
-    videos.slice(-5).reverse().forEach(video => {
-        const thumbnail = document.createElement('div');
-        thumbnail.className = 'thumbnail';
-        thumbnail.style.backgroundImage = `url('${isValidUrl(video.thumbnailImage) ? video.thumbnailImage : 'https://via.placeholder.com/135x180'}')`;
-        thumbnail.onclick = () => openVideoModal(video);
-        recentlyAdded.appendChild(thumbnail);
-    });
+    let seasons = [];
+    if (videoType === 'Series') {
+        const numSeasons = parseInt(getElement('numSeasons').value);
+        seasons = Array.from({ length: numSeasons }, (_, i) => {
+            const episodes = [];
+            const episodeInputs = document.querySelectorAll(`#season${i + 1} .episode-input`);
+            episodeInputs.forEach(input => {
+                const name = input.querySelector('.episode-name').value;
+                const thumbnail = input.querySelector('.episode-thumbnail').value;
+                const embed = input.querySelector('.episode-embed').value;
+                const duration = input.querySelector('.episode-duration').value;
+                if (name && embed) {
+                    episodes.push({ episodeNumber: episodes.length + 1, name, thumbnail, embedCode: embed, duration });
+                }
+            });
+            return { seasonNumber: i + 1, episodes };
+        });
+    }
 
-    // Action Category
-    videos.filter(video => video.category === 'Action').forEach(video => {
-        const thumbnail = document.createElement('div');
-        thumbnail.className = 'thumbnail';
-        thumbnail.style.backgroundImage = `url('${isValidUrl(video.thumbnailImage) ? video.thumbnailImage : 'https://via.placeholder.com/135x180'}')`;
-        thumbnail.onclick = () => openVideoModal(video);
-        actionVideos.appendChild(thumbnail);
-    });
+    const newVideo = {
+        id: videos.length + 1,
+        title,
+        type: videoType,
+        category: genres[0],
+        seasons: videoType === 'Series' ? seasons : undefined,
+        embedCode: videoType === 'Movie' ? embedCode : undefined,
+        bannerImage: bannerImage || 'https://via.placeholder.com/1280x720',
+        thumbnailImage: thumbnailImage || 'https://via.placeholder.com/135x180',
+        rating,
+        year,
+        genres
+    };
 
-    // Romance Category
-    videos.filter(video => video.category === 'Romance').forEach(video => {
-        const thumbnail = document.createElement('div');
-        thumbnail.className = 'thumbnail';
-        thumbnail.style.backgroundImage = `url('${isValidUrl(video.thumbnailImage) ? video.thumbnailImage : 'https://via.placeholder.com/135x180'}')`;
-        thumbnail.onclick = () => openVideoModal(video);
-        romanceVideos.appendChild(thumbnail);
-    });
+    videos.push(newVideo);
+    displayFeaturedVideo();
+    displayCategoryVideos();
+    updateVideoList();
+    getElement('videoForm').reset();
+    toggleSeasonField();
+    formError.style.display = 'none';
+}
 
-    // Admin Video List
+function toggleSeasonField() {
+    const videoType = getElement('videoType').value;
+    const seasonField = getElement('seasonField');
+    const seasonsInput = getElement('seasonsInput');
+    const embedCode = getElement('embedCode');
+
+    if (videoType === 'Series') {
+        seasonField.style.display = 'block';
+        seasonsInput.style.display = 'block';
+        embedCode.parentElement.style.display = 'none';
+        updateSeasonInputs();
+    } else {
+        seasonField.style.display = 'none';
+        seasonsInput.style.display = 'none';
+        embedCode.parentElement.style.display = 'block';
+    }
+}
+
+function updateSeasonInputs() {
+    const numSeasons = parseInt(getElement('numSeasons').value) || 1;
+    const seasonsInput = getElement('seasonsInput');
+    seasonsInput.innerHTML = '';
+
+    for (let i = 1; i <= numSeasons; i++) {
+        const seasonDiv = document.createElement('div');
+        seasonDiv.id = `season${i}`;
+        seasonDiv.innerHTML = `<h4>Season ${i}</h4>`;
+        const episodeInput = document.createElement('div');
+        episodeInput.className = 'episode-input';
+        episodeInput.innerHTML = `
+            <label>Episode Name:</label>
+            <input type="text" class="episode-name" required>
+            <label>Episode Thumbnail URL:</label>
+            <input type="text" class="episode-thumbnail">
+            <label>Episode Embed Code:</label>
+            <textarea class="episode-embed" required></textarea>
+            <label>Episode Duration (e.g., 25m):</label>
+            <input type="text" class="episode-duration" required>
+        `;
+        seasonDiv.appendChild(episodeInput);
+        seasonsInput.appendChild(seasonDiv);
+    }
+}
+
+function updateVideoList() {
+    const videoList = getElement('videoList');
+    videoList.innerHTML = '';
     videos.forEach(video => {
         const li = document.createElement('li');
         li.innerHTML = `
-            <span>${sanitizeInput(video.title)}</span>
+            <span>${video.title} (${video.type})</span>
             <div>
                 <button class="edit-button" onclick="openEditModal(${video.id})">Edit</button>
                 <button class="delete-button" onclick="deleteVideo(${video.id})">Delete</button>
@@ -277,93 +393,166 @@ function renderVideos() {
     });
 }
 
-// TV Shows Section
-function renderTvCategories(selectedCategory) {
-    const tvCategoriesSection = getElement('tvCategories');
-    const categoryButtons = document.querySelectorAll('.category-btn');
+function openEditModal(videoId) {
+    const video = videos.find(v => v.id === videoId);
+    if (!video) return;
 
-    if (!tvCategoriesSection || !categoryButtons) {
-        console.error("TV Categories section or buttons not found");
-        return;
-    }
-
-    // Update active category button
-    categoryButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.textContent === selectedCategory) {
-            btn.classList.add('active');
-        }
-    });
-
-    // Render categories
-    tvCategoriesSection.innerHTML = '';
-    Object.keys(tvCategories).forEach(category => {
-        const section = document.createElement('section');
-        section.className = 'tv-category-section';
-        section.innerHTML = `
-            <div class="tv-category-header">
-                <h3>${sanitizeInput(category)}</h3>
-                <a href="#" onclick="filterTvCategory('${category}'); return false;">See all</a>
+    const editFormContainer = getElement('editFormContainer');
+    editFormContainer.innerHTML = `
+        <form id="editForm" class="edit-form">
+            <label>Title:</label>
+            <input type="text" id="editTitle" value="${video.title}" required>
+            <label>Type:</label>
+            <select id="editVideoType" required onchange="toggleEditSeasonField()">
+                <option value="Series" ${video.type === 'Series' ? 'selected' : ''}>Series</option>
+                <option value="Movie" ${video.type === 'Movie' ? 'selected' : ''}>Movie</option>
+            </select>
+            <label>Genres (Hold Ctrl/Cmd to select multiple):</label>
+            <select id="editGenres" multiple required>
+                <option value="Action" ${video.genres.includes('Action') ? 'selected' : ''}>Action</option>
+                <option value="Romance" ${video.genres.includes('Romance') ? 'selected' : ''}>Romance</option>
+                <option value="Adventure" ${video.genres.includes('Adventure') ? 'selected' : ''}>Adventure</option>
+                <option value="Fantasy" ${video.genres.includes('Fantasy') ? 'selected' : ''}>Fantasy</option>
+                <option value="Drama" ${video.genres.includes('Drama') ? 'selected' : ''}>Drama</option>
+            </select>
+            <label id="editEmbedCodeLabel">Embed Code (Movie):</label>
+            <textarea id="editEmbedCode" ${video.type === 'Series' ? 'style="display:none;"' : ''}>${video.embedCode || ''}</textarea>
+            <div id="editSeasonField" ${video.type === 'Movie' ? 'style="display:none;"' : ''}>
+                <label>Number of Seasons:</label>
+                <input type="number" id="editNumSeasons" min="1" step="1" value="${video.seasons ? video.seasons.length : 1}" onchange="updateEditSeasonInputs()">
             </div>
-            <div class="channel-grid" id="${category.replace(/\s/g, '')}Channels"></div>
-        `;
-        tvCategoriesSection.appendChild(section);
-
-        const channelGrid = getElement(category.replace(/\s/g, '') + 'Channels');
-        if (channelGrid) {
-            tvCategories[category].forEach(channel => {
-                const tile = document.createElement('div');
-                tile.className = 'channel-tile';
-                tile.style.backgroundImage = `url('${isValidUrl(channel.thumbnail) ? channel.thumbnail : 'https://via.placeholder.com/120x120'}')`;
-                tile.innerHTML = `<span>${sanitizeInput(channel.name)}</span>`;
-                tile.onclick = () => alert(`Playing ${channel.name} (Embed not implemented)`);
-                channelGrid.appendChild(tile);
-            });
-        }
-    });
-}
-
-function selectTvCategory(category) {
-    renderTvCategories(category);
-}
-
-function filterTvCategory(category) {
-    const tvCategoriesSection = getElement('tvCategories');
-    if (!tvCategoriesSection) return;
-
-    tvCategoriesSection.innerHTML = '';
-    const section = document.createElement('section');
-    section.className = 'tv-category-section';
-    section.innerHTML = `
-        <div class="tv-category-header">
-            <h3>${sanitizeInput(category)}</h3>
-        </div>
-        <div class="channel-grid" id="${category.replace(/\s/g, '')}Channels"></div>
+            <div id="editSeasonsInput"></div>
+            <label>Rating (0.0 to 10.0):</label>
+            <input type="number" id="editRating" min="0" max="10" step="0.1" value="${video.rating}" required>
+            <label>Year:</label>
+            <input type="number" id="editYear" min="1900" max="2025" step="1" value="${video.year}" required>
+            <label>Banner Image URL:</label>
+            <input type="text" id="editBannerImage" value="${video.bannerImage}">
+            <label>Thumbnail Image URL:</label>
+            <input type="text" id="editThumbnailImage" value="${video.thumbnailImage}">
+            <button type="submit">Save Changes</button>
+        </form>
     `;
-    tvCategoriesSection.appendChild(section);
 
-    const channelGrid = getElement(category.replace(/\s/g, '') + 'Channels');
-    if (channelGrid) {
-        tvCategories[category].forEach(channel => {
-            const tile = document.createElement('div');
-            tile.className = 'channel-tile large';
-            tile.style.backgroundImage = `url('${isValidUrl(channel.thumbnail) ? channel.thumbnail : 'https://via.placeholder.com/120x120'}')`;
-            tile.innerHTML = `<span>${sanitizeInput(channel.name)}</span>`;
-            tile.onclick = () => alert(`Playing ${channel.name} (Embed not implemented)`);
-            channelGrid.appendChild(tile);
+    updateEditSeasonInputs(video);
+    getElement('editModal').style.display = 'block';
+
+    const editForm = getElement('editForm');
+    editForm.onsubmit = (e) => {
+        e.preventDefault();
+        saveVideoChanges(videoId);
+    };
+}
+
+function toggleEditSeasonField() {
+    const videoType = getElement('editVideoType').value;
+    const seasonField = getElement('editSeasonField');
+    const seasonsInput = getElement('editSeasonsInput');
+    const embedCode = getElement('editEmbedCode');
+    const embedCodeLabel = getElement('editEmbedCodeLabel');
+
+    if (videoType === 'Series') {
+        seasonField.style.display = 'block';
+        seasonsInput.style.display = 'block';
+        embedCode.style.display = 'none';
+        embedCodeLabel.style.display = 'none';
+        updateEditSeasonInputs();
+    } else {
+        seasonField.style.display = 'none';
+        seasonsInput.style.display = 'none';
+        embedCode.style.display = 'block';
+        embedCodeLabel.style.display = 'block';
+    }
+}
+
+function updateEditSeasonInputs(video = null) {
+    const numSeasons = parseInt(getElement('editNumSeasons').value) || 1;
+    const seasonsInput = getElement('editSeasonsInput');
+    seasonsInput.innerHTML = '';
+
+    for (let i = 1; i <= numSeasons; i++) {
+        const seasonDiv = document.createElement('div');
+        seasonDiv.id = `editSeason${i}`;
+        seasonDiv.innerHTML = `<h4>Season ${i}</h4>`;
+        const episodeInput = document.createElement('div');
+        episodeInput.className = 'episode-input';
+        const existingSeason = video && video.seasons && video.seasons[i - 1];
+        const episode = existingSeason && existingSeason.episodes && existingSeason.episodes[0];
+        episodeInput.innerHTML = `
+            <label>Episode Name:</label>
+            <input type="text" class="episode-name" value="${episode ? episode.name : ''}" required>
+            <label>Episode Thumbnail URL:</label>
+            <input type="text" class="episode-thumbnail" value="${episode ? episode.thumbnail : ''}">
+            <label>Episode Embed Code:</label>
+            <textarea class="episode-embed" required>${episode ? episode.embedCode : ''}</textarea>
+            <label>Episode Duration (e.g., 25m):</label>
+            <input type="text" class="episode-duration" value="${episode ? episode.duration : ''}" required>
+        `;
+        seasonDiv.appendChild(episodeInput);
+        seasonsInput.appendChild(seasonDiv);
+    }
+}
+
+function saveVideoChanges(videoId) {
+    const video = videos.find(v => v.id === videoId);
+    if (!video) return;
+
+    const title = getElement('editTitle').value;
+    const videoType = getElement('editVideoType').value;
+    const genres = Array.from(getElement('editGenres').selectedOptions).map(option => option.value);
+    const embedCode = getElement('editEmbedCode').value;
+    const rating = parseFloat(getElement('editRating').value);
+    const year = parseInt(getElement('editYear').value);
+    const bannerImage = getElement('editBannerImage').value;
+    const thumbnailImage = getElement('editThumbnailImage').value;
+
+    let seasons = [];
+    if (videoType === 'Series') {
+        const numSeasons = parseInt(getElement('editNumSeasons').value);
+        seasons = Array.from({ length: numSeasons }, (_, i) => {
+            const episodes = [];
+            const episodeInputs = document.querySelectorAll(`#editSeason${i + 1} .episode-input`);
+            episodeInputs.forEach(input => {
+                const name = input.querySelector('.episode-name').value;
+                const thumbnail = input.querySelector('.episode-thumbnail').value;
+                const embed = input.querySelector('.episode-embed').value;
+                const duration = input.querySelector('.episode-duration').value;
+                if (name && embed) {
+                    episodes.push({ episodeNumber: episodes.length + 1, name, thumbnail, embedCode: embed, duration });
+                }
+            });
+            return { seasonNumber: i + 1, episodes };
         });
     }
+
+    video.title = title;
+    video.type = videoType;
+    video.category = genres[0];
+    video.seasons = videoType === 'Series' ? seasons : undefined;
+    video.embedCode = videoType === 'Movie' ? embedCode : undefined;
+    video.bannerImage = bannerImage || 'https://via.placeholder.com/1280x720';
+    video.thumbnailImage = thumbnailImage || 'https://via.placeholder.com/135x180';
+    video.rating = rating;
+    video.year = year;
+    video.genres = genres;
+
+    displayFeaturedVideo();
+    displayCategoryVideos();
+    updateVideoList();
+    closeEditModal();
 }
 
-// Video Modal
-let currentVideo = null;
-let selectedSeason = 1;
-let selectedEpisode = null;
+function deleteVideo(videoId) {
+    videos = videos.filter(v => v.id !== videoId);
+    displayFeaturedVideo();
+    displayCategoryVideos();
+    updateVideoList();
+}
 
 function openVideoModal(video) {
-    currentVideo = video;
-    selectedSeason = 1;
-    selectedEpisode = null;
+    selectedVideo = video;
+    currentSeason = 1;
+    currentEpisode = 1;
 
     const modal = getElement('videoModal');
     const modalBanner = getElement('modalBanner');
@@ -377,665 +566,287 @@ function openVideoModal(video) {
     const seasonSlide = getElement('seasonSlide');
     const episodeSlide = getElement('episodeSlide');
     const videoPlayer = getElement('videoPlayer');
+    const playButton = getElement('playButton');
 
-    if (!modal || !modalBanner || !modalTitle || !modalGenres || !modalRating || !modalSeason || !modalYear || !seasonToggleButton || !episodeToggleButton || !seasonSlide || !episodeSlide || !videoPlayer) {
-        console.error("Video modal elements not found");
-        return;
-    }
-
-    modalBanner.style.backgroundImage = `url('${isValidUrl(video.bannerImage) ? video.bannerImage : 'https://via.placeholder.com/300x450'}')`;
+    modalBanner.style.backgroundImage = `url(${video.bannerImage})`;
     modalTitle.textContent = video.title;
-    modalGenres.innerHTML = video.genres.map(genre => `<span>${sanitizeInput(genre)}</span>`).join('');
-    modalRating.innerHTML = `⭐ ${video.rating.toFixed(1)}`;
-    modalSeason.innerHTML = video.type === 'Series' ? `Seasons: ${video.seasons.length}` : '';
+    modalGenres.innerHTML = video.genres.map(genre => `<span>${genre}</span>`).join('');
+    modalRating.innerHTML = `<svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ${video.rating}`;
+    modalSeason.textContent = video.type === 'Series' ? `${video.seasons.length} Season${video.seasons.length > 1 ? 's' : ''}` : '';
     modalYear.textContent = video.year;
+
     videoPlayer.innerHTML = '';
     videoPlayer.classList.remove('active');
 
     if (video.type === 'Series') {
         seasonToggleButton.style.display = 'inline-flex';
         episodeToggleButton.style.display = 'inline-flex';
-        renderSeasons();
-        renderEpisodes();
+        setupSeasonOptions(video);
+        setupEpisodeOptions(video, currentSeason);
+        seasonToggleButton.onclick = () => {
+            seasonSlide.classList.toggle('active');
+            episodeSlide.classList.remove('active');
+        };
+        episodeToggleButton.onclick = () => {
+            episodeSlide.classList.toggle('active');
+            seasonSlide.classList.remove('active');
+        };
+        playButton.onclick = () => {
+            const season = video.seasons.find(s => s.seasonNumber === currentSeason);
+            const episode = season.episodes.find(e => e.episodeNumber === currentEpisode);
+            videoPlayer.innerHTML = episode.embedCode;
+            videoPlayer.classList.add('active');
+            seasonSlide.classList.remove('active');
+            episodeSlide.classList.remove('active');
+        };
     } else {
         seasonToggleButton.style.display = 'none';
         episodeToggleButton.style.display = 'none';
         seasonSlide.classList.remove('active');
         episodeSlide.classList.remove('active');
+        playButton.onclick = () => {
+            videoPlayer.innerHTML = video.embedCode;
+            videoPlayer.classList.add('active');
+        };
     }
 
     modal.style.display = 'block';
 }
 
-function renderSeasons() {
-    if (!currentVideo || currentVideo.type !== 'Series') return;
-
+function setupSeasonOptions(video) {
     const seasonOptions = getElement('seasonOptions');
-    const seasonSlide = getElement('seasonSlide');
-    const seasonToggleButton = getElement('seasonToggleButton');
-
-    if (!seasonOptions || !seasonSlide || !seasonToggleButton) return;
-
     seasonOptions.innerHTML = '';
-    currentVideo.seasons.forEach(season => {
-        const button = document.createElement('button');
-        button.className = 'season-option-button';
-        button.textContent = `Season ${season.seasonNumber}`;
-        if (season.seasonNumber === selectedSeason) {
-            button.classList.add('active');
-        }
-        button.onclick = () => {
-            selectedSeason = season.seasonNumber;
-            selectedEpisode = null;
-            renderSeasons();
-            renderEpisodes();
-            seasonSlide.classList.remove('active');
-        };
-        seasonOptions.appendChild(button);
-    });
-
-    seasonToggleButton.onclick = () => {
-        seasonSlide.classList.toggle('active');
-    };
-}
-
-function renderEpisodes() {
-    if (!currentVideo || currentVideo.type !== 'Series') return;
-
-    const episodeSlide = getElement('episodeSlide');
-    const episodeOptions = getElement('episodeOptions');
-    const episodeToggleButton = getElement('episodeToggleButton');
-    const videoPlayer = getElement('videoPlayer');
-
-    if (!episodeSlide || !episodeOptions || !episodeToggleButton || !videoPlayer) return;
-
-    const season = currentVideo.seasons.find(s => s.seasonNumber === selectedSeason);
-    if (!season) return;
-
-    episodeOptions.innerHTML = '';
-    season.episodes.forEach(episode => {
-        const progress = episodeProgress[`${currentVideo.id}-${selectedSeason}-${episode.episodeNumber}`] || 0;
-        const episodeItem = document.createElement('div');
-        episodeItem.className = 'episode-item';
-        episodeItem.innerHTML = `
-            <div class="episode-content">
-                <div class="episode-thumbnail" style="background-image: url('${isValidUrl(episode.thumbnail) ? episode.thumbnail : 'https://via.placeholder.com/160x90'}')"></div>
-                <div class="episode-details">
-                    <div class="episode-header">
-                        <h3 class="episode-title">${sanitizeInput(episode.name)}</h3>
-                        <span class="episode-duration">${sanitizeInput(episode.duration)}</span>
-                        <svg class="progress-circle" viewBox="0 0 36 36">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="circle" stroke-dasharray="${progress}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <text x="18" y="20.35" class="percentage">${progress}%</text>
-                        </svg>
-                    </div>
-                    <p class="episode-description">Episode ${episode.episodeNumber}</p>
-                </div>
-            </div>
-        `;
-        episodeItem.onclick = () => {
-            selectedEpisode = episode;
-            episodeSlide.classList.remove('active');
-            playEpisode();
-        };
-        episodeOptions.appendChild(episodeItem);
-    });
-
-    episodeToggleButton.onclick = () => {
-        episodeSlide.classList.toggle('active');
-    };
-}
-
-function playEpisode() {
-    if (!currentVideo) return;
-
-    const videoPlayer = getElement('videoPlayer');
-    const playButton = getElement('playButton');
-
-    if (!videoPlayer || !playButton) return;
-
-    if (currentVideo.type === 'Series' && selectedEpisode) {
-        videoPlayer.innerHTML = selectedEpisode.embedCode;
-        episodeProgress[`${currentVideo.id}-${selectedSeason}-${selectedEpisode.episodeNumber}`] = 50; // Simulate progress
-        safeLocalStorageSet('episodeProgress', episodeProgress);
-        renderEpisodes();
-    } else if (currentVideo.type === 'Movie') {
-        videoPlayer.innerHTML = currentVideo.embedCode;
+    if (video.type === 'Series') {
+        video.seasons.forEach(season => {
+            const button = document.createElement('button');
+            button.className = 'season-option-button';
+            button.textContent = `Season ${season.seasonNumber}`;
+            if (season.seasonNumber === currentSeason) {
+                button.classList.add('active');
+            }
+            button.onclick = () => {
+                currentSeason = season.seasonNumber;
+                currentEpisode = 1;
+                setupSeasonOptions(video);
+                setupEpisodeOptions(video, currentSeason);
+                getElement('seasonSlide').classList.remove('active');
+            };
+            seasonOptions.appendChild(button);
+        });
     }
+}
 
-    videoPlayer.classList.add('active');
-    playButton.onclick = () => {
-        videoPlayer.innerHTML = '';
-        videoPlayer.classList.remove('active');
-        if (currentVideo.type === 'Series') {
-            renderEpisodes();
+function setupEpisodeOptions(video, seasonNumber) {
+    const episodeOptions = getElement('episodeOptions');
+    episodeOptions.innerHTML = '';
+    if (video.type === 'Series') {
+        const season = video.seasons.find(s => s.seasonNumber === seasonNumber);
+        if (season) {
+            episodeOptions.innerHTML = `<div class="season-header">Season ${seasonNumber}</div>`;
+            season.episodes.forEach(episode => {
+                const episodeItem = document.createElement('div');
+                episodeItem.className = 'episode-item';
+                episodeItem.innerHTML = `
+                    <div class="episode-content">
+                        <div class="episode-thumbnail" style="background-image: url(${episode.thumbnail || 'https://via.placeholder.com/160x90'})"></div>
+                        <div class="episode-details">
+                            <div class="episode-header">
+                                <h3 class="episode-title">${episode.name}</h3>
+                                <span class="episode-duration">${episode.duration}</span>
+                            </div>
+                            <p class="episode-description">Episode ${episode.episodeNumber}</p>
+                        </div>
+                    </div>
+                `;
+                episodeItem.onclick = () => {
+                    currentEpisode = episode.episodeNumber;
+                    setupEpisodeOptions(video, seasonNumber);
+                    getElement('episodeSlide').classList.remove('active');
+                    const videoPlayer = getElement('videoPlayer');
+                    videoPlayer.innerHTML = episode.embedCode;
+                    videoPlayer.classList.add('active');
+                };
+                if (episode.episodeNumber === currentEpisode) {
+                    episodeItem.classList.add('active');
+                }
+                episodeOptions.appendChild(episodeItem);
+            });
         }
-    };
+    }
 }
 
 function closeVideoModal() {
-    const modal = getElement('videoModal');
-    const videoPlayer = getElement('videoPlayer');
-    const seasonSlide = getElement('seasonSlide');
-    const episodeSlide = getElement('episodeSlide');
-
-    if (modal && videoPlayer && seasonSlide && episodeSlide) {
-        modal.style.display = 'none';
-        videoPlayer.innerHTML = '';
-        videoPlayer.classList.remove('active');
-        seasonSlide.classList.remove('active');
-        episodeSlide.classList.remove('active');
-        currentVideo = null;
-        selectedSeason = 1;
-        selectedEpisode = null;
-    }
-}
-
-// Admin Panel Password Protection
-let isAdminAuthenticated = false;
-
-function showPasswordModal() {
-    const passwordModal = getElement('passwordModal');
-    if (passwordModal) {
-        passwordModal.style.display = 'block';
-    }
-}
-
-function closePasswordModal() {
-    const passwordModal = getElement('passwordModal');
-    const passwordError = getElement('passwordError');
-    if (passwordModal && passwordError) {
-        passwordModal.style.display = 'none';
-        passwordError.style.display = 'none';
-        getElement('adminPassword').value = '';
-    }
-}
-
-function toggleView() {
-    if (!isAdminAuthenticated) {
-        showPasswordModal();
-        return;
-    }
-
-    const userView = getElement('userView');
-    const adminView = getElement('adminView');
-    const tvShowsView = getElement('tvShowsView');
-    const toggleViewBtn = getElement('toggleView');
-
-    if (!userView || !adminView || !tvShowsView || !toggleViewBtn) return;
-
-    if (adminView.style.display === 'none') {
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        tvShowsView.style.display = 'none';
-        toggleViewBtn.textContent = 'User View';
-        showAdminSection('addVideoSection'); // Show Add Video section by default
-    } else {
-        userView.style.display = 'block';
-        adminView.style.display = 'none';
-        tvShowsView.style.display = 'none';
-        toggleViewBtn.textContent = 'Admin';
-    }
-
-    updateNavActive('homeButton');
-}
-
-function showView(viewId) {
-    const userView = getElement('userView');
-    const adminView = getElement('adminView');
-    const tvShowsView = getElement('tvShowsView');
-    const toggleViewBtn = getElement('toggleView');
-
-    if (!userView || !adminView || !tvShowsView || !toggleViewBtn) return;
-
-    userView.style.display = viewId === 'userView' ? 'block' : 'none';
-    adminView.style.display = viewId === 'adminView' ? 'block' : 'none';
-    tvShowsView.style.display = viewId === 'tvShowsView' ? 'block' : 'none';
-
-    toggleViewBtn.textContent = viewId === 'adminView' ? 'User View' : 'Admin';
-
-    updateNavActive(viewId === 'userView' ? 'homeButton' : viewId === 'tvShowsView' ? 'tvShowsButton' : 'settingsButton');
-}
-
-function updateNavActive(activeId) {
-    const navButtons = ['homeButton', 'searchButton', 'tvShowsButton', 'settingsButton'];
-    navButtons.forEach(id => {
-        const btn = getElement(id);
-        if (btn) {
-            btn.classList.remove('active');
-            if (id === activeId) {
-                btn.classList.add('active');
-            }
-        }
-    });
-}
-
-// Admin Functions
-function toggleSeasonField() {
-    const videoType = getElement('videoType')?.value;
-    const seasonField = getElement('seasonField');
-    const seasonsInput = getElement('seasonsInput');
-
-    if (!seasonField || !seasonsInput) return;
-
-    if (videoType === 'Series') {
-        seasonField.style.display = 'block';
-        seasonsInput.style.display = 'block';
-        updateSeasonInputs();
-    } else {
-        seasonField.style.display = 'none';
-        seasonsInput.style.display = 'none';
-    }
-}
-
-function updateSeasonInputs() {
-    const numSeasons = parseInt(getElement('numSeasons')?.value || 1);
-    const seasonsInput = getElement('seasonsInput');
-    if (!seasonsInput) return;
-
-    seasonsInput.innerHTML = '';
-    for (let i = 1; i <= numSeasons; i++) {
-        const seasonDiv = document.createElement('div');
-        seasonDiv.innerHTML = `
-            <label>Season ${i} Episodes:</label>
-            <textarea id="season${i}Episodes" placeholder="Episode 1 Name\nEpisode 1 Embed Code\nEpisode 1 Thumbnail URL\nEpisode 1 Duration\nEpisode 2 Name\n..." required></textarea>
-        `;
-        seasonsInput.appendChild(seasonDiv);
-    }
-}
-
-function addVideo(event) {
-    event.preventDefault();
-    const formError = getElement('formError');
-    if (!formError) return;
-
-    const title = sanitizeInput(getElement('title')?.value);
-    const videoType = getElement('videoType')?.value;
-    const genres = Array.from(getElement('genres')?.selectedOptions || []).map(option => option.value);
-    const embedCode = videoType === 'Movie' ? sanitizeInput(getElement('embedCode')?.value) : '';
-    const numSeasons = parseInt(getElement('numSeasons')?.value || 1);
-    const rating = parseFloat(getElement('rating')?.value);
-    const year = parseInt(getElement('year')?.value);
-    const bannerImage = getElement('bannerImage')?.value || 'https://via.placeholder.com/300x450';
-    const thumbnailImage = getElement('thumbnailImage')?.value || 'https://via.placeholder.com/135x180';
-
-    if (!title || !videoType || genres.length === 0 || (videoType === 'Movie' && !embedCode) || !rating || !year) {
-        formError.textContent = 'Please fill in all required fields.';
-        formError.style.display = 'block';
-        return;
-    }
-
-    let seasons = null;
-    if (videoType === 'Series') {
-        seasons = [];
-        for (let i = 1; i <= numSeasons; i++) {
-            const episodesInput = getElement(`season${i}Episodes`)?.value.split('\n');
-            if (!episodesInput || episodesInput.length < 4) {
-                formError.textContent = `Please provide details for Season ${i} episodes.`;
-                formError.style.display = 'block';
-                return;
-            }
-
-            const episodes = [];
-            for (let j = 0; j < episodesInput.length; j += 4) {
-                if (!episodesInput[j] || !episodesInput[j + 1] || !episodesInput[j + 2] || !episodesInput[j + 3]) continue;
-                episodes.push({
-                    episodeNumber: episodes.length + 1,
-                    name: sanitizeInput(episodesInput[j]),
-                    embedCode: sanitizeInput(episodesInput[j + 1]),
-                    thumbnail: episodesInput[j + 2],
-                    duration: episodesInput[j + 3]
-                });
-            }
-            seasons.push({ seasonNumber: i, episodes });
-        }
-    }
-
-    const newVideo = {
-        id: videos.length + 1,
-        title,
-        type: videoType,
-        category: genres[0], // Use first genre as category
-        seasons,
-        embedCode,
-        bannerImage,
-        thumbnailImage,
-        rating,
-        year,
-        genres
-    };
-
-    videos.push(newVideo);
-    renderVideos();
-    getElement('videoForm')?.reset();
-    toggleSeasonField();
-}
-
-function deleteVideo(id) {
-    videos = videos.filter(video => video.id !== id);
-    renderVideos();
-}
-
-function openEditModal(id) {
-    const video = videos.find(v => v.id === id);
-    if (!video) return;
-
-    const editModal = getElement('editModal');
-    const editFormContainer = getElement('editFormContainer');
-    if (!editModal || !editFormContainer) return;
-
-    editFormContainer.innerHTML = `
-        <form class="edit-form" onsubmit="updateVideo(event, ${id}); return false;">
-            <label>Title:</label>
-            <input type="text" id="editTitle" value="${sanitizeInput(video.title)}" required>
-            <label>Type:</label>
-            <select id="editVideoType" onchange="toggleEditSeasonField()">
-                <option value="Series" ${video.type === 'Series' ? 'selected' : ''}>Series</option>
-                <option value="Movie" ${video.type === 'Movie' ? 'selected' : ''}>Movie</option>
-            </select>
-            <label>Genres:</label>
-            <select id="editGenres" multiple required>
-                <option value="Action" ${video.genres.includes('Action') ? 'selected' : ''}>Action</option>
-                <option value="Romance" ${video.genres.includes('Romance') ? 'selected' : ''}>Romance</option>
-                <option value="Adventure" ${video.genres.includes('Adventure') ? 'selected' : ''}>Adventure</option>
-                <option value="Fantasy" ${video.genres.includes('Fantasy') ? 'selected' : ''}>Fantasy</option>
-                <option value="Drama" ${video.genres.includes('Drama') ? 'selected' : ''}>Drama</option>
-            </select>
-            <label>Embed Code (Movie):</label>
-            <textarea id="editEmbedCode">${video.embedCode || ''}</textarea>
-            <div id="editSeasonField"></div>
-            <div id="editSeasonsInput"></div>
-            <label>Rating:</label>
-            <input type="number" id="editRating" min="0" max="10" step="0.1" value="${video.rating}" required>
-            <label>Year:</label>
-            <input type="number" id="editYear" min="1900" max="2025" step="1" value="${video.year}" required>
-            <label>Banner Image URL:</label>
-            <input type="text" id="editBannerImage" value="${video.bannerImage}">
-            <label>Thumbnail Image URL:</label>
-            <input type="text" id="editThumbnailImage" value="${video.thumbnailImage}">
-            <button type="submit">Update Video</button>
-        </form>
-    `;
-
-    editModal.style.display = 'block';
-    toggleEditSeasonField();
-}
-
-function toggleEditSeasonField() {
-    const videoType = getElement('editVideoType')?.value;
-    const editSeasonField = getElement('editSeasonField');
-    const editSeasonsInput = getElement('editSeasonsInput');
-
-    if (!editSeasonField || !editSeasonsInput) return;
-
-    if (videoType === 'Series') {
-        editSeasonField.style.display = 'block';
-        editSeasonsInput.style.display = 'block';
-        const video = videos.find(v => v.id === parseInt(editSeasonsInput.closest('form')?.onsubmit.toString().match(/\d+/)[0]));
-        if (video && video.seasons) {
-            editSeasonField.innerHTML = `
-                <label>Number of Seasons:</label>
-                <input type="number" id="editNumSeasons" min="1" step="1" value="${video.seasons.length}" onchange="updateEditSeasonInputs()">
-            `;
-            updateEditSeasonInputs();
-        }
-    } else {
-        editSeasonField.style.display = 'none';
-        editSeasonsInput.style.display = 'none';
-    }
-}
-
-function updateEditSeasonInputs() {
-    const numSeasons = parseInt(getElement('editNumSeasons')?.value || 1);
-    const editSeasonsInput = getElement('editSeasonsInput');
-    if (!editSeasonsInput) return;
-
-    const video = videos.find(v => v.id === parseInt(editSeasonsInput.closest('form')?.onsubmit.toString().match(/\d+/)[0]));
-    if (!video) return;
-
-    editSeasonsInput.innerHTML = '';
-    for (let i = 1; i <= numSeasons; i++) {
-        const season = video.seasons?.[i - 1] || { episodes: [] };
-        const episodesText = season.episodes.map(ep => `${ep.name}\n${ep.embedCode}\n${ep.thumbnail}\n${ep.duration}`).join('\n');
-        const seasonDiv = document.createElement('div');
-        seasonDiv.innerHTML = `
-            <label>Season ${i} Episodes:</label>
-            <textarea id="editSeason${i}Episodes" placeholder="Episode 1 Name\nEpisode 1 Embed Code\nEpisode 1 Thumbnail URL\nEpisode 1 Duration\n..." required>${episodesText}</textarea>
-        `;
-        editSeasonsInput.appendChild(seasonDiv);
-    }
-}
-
-function updateVideo(event, id) {
-    event.preventDefault();
-    const title = sanitizeInput(getElement('editTitle')?.value);
-    const videoType = getElement('editVideoType')?.value;
-    const genres = Array.from(getElement('editGenres')?.selectedOptions || []).map(option => option.value);
-    const embedCode = videoType === 'Movie' ? sanitizeInput(getElement('editEmbedCode')?.value) : '';
-    const numSeasons = parseInt(getElement('editNumSeasons')?.value || 1);
-    const rating = parseFloat(getElement('editRating')?.value);
-    const year = parseInt(getElement('editYear')?.value);
-    const bannerImage = getElement('editBannerImage')?.value || 'https://via.placeholder.com/300x450';
-    const thumbnailImage = getElement('editThumbnailImage')?.value || 'https://via.placeholder.com/135x180';
-
-    let seasons = null;
-    if (videoType === 'Series') {
-        seasons = [];
-        for (let i = 1; i <= numSeasons; i++) {
-            const episodesInput = getElement(`editSeason${i}Episodes`)?.value.split('\n');
-            if (!episodesInput || episodesInput.length < 4) continue;
-
-            const episodes = [];
-            for (let j = 0; j < episodesInput.length; j += 4) {
-                if (!episodesInput[j] || !episodesInput[j + 1] || !episodesInput[j + 2] || !episodesInput[j + 3]) continue;
-                episodes.push({
-                    episodeNumber: episodes.length + 1,
-                    name: sanitizeInput(episodesInput[j]),
-                    embedCode: sanitizeInput(episodesInput[j + 1]),
-                    thumbnail: episodesInput[j + 2],
-                    duration: episodesInput[j + 3]
-                });
-            }
-            seasons.push({ seasonNumber: i, episodes });
-        }
-    }
-
-    const videoIndex = videos.findIndex(v => v.id === id);
-    if (videoIndex !== -1) {
-        videos[videoIndex] = {
-            ...videos[videoIndex],
-            title,
-            type: videoType,
-            category: genres[0],
-            seasons,
-            embedCode,
-            bannerImage,
-            thumbnailImage,
-            rating,
-            year,
-            genres
-        };
-        renderVideos();
-        closeEditModal();
-    }
+    getElement('videoModal').style.display = 'none';
+    getElement('videoPlayer').innerHTML = '';
+    getElement('videoPlayer').classList.remove('active');
+    getElement('seasonSlide').classList.remove('active');
+    getElement('episodeSlide').classList.remove('active');
 }
 
 function closeEditModal() {
-    const editModal = getElement('editModal');
-    if (editModal) {
-        editModal.style.display = 'none';
-    }
+    getElement('editModal').style.display = 'none';
 }
 
-// Admin Menu Navigation
-function showAdminSection(sectionId) {
-    const sections = ['addVideoSection', 'videoManagementSection', 'requestedMoviesSection'];
-    const buttons = ['addVideoMenu', 'videoManagementMenu', 'requestedMoviesMenu'];
-
-    sections.forEach(id => {
-        const section = getElement(id);
-        if (section) {
-            section.style.display = id === sectionId ? 'block' : 'none';
-        }
-    });
-
-    buttons.forEach(id => {
-        const btn = getElement(id);
-        if (btn) {
-            btn.classList.remove('active');
-            if (id === sectionId.replace('Section', 'Menu')) {
-                btn.classList.add('active');
-            }
-        }
-    });
-}
-
-// Search Modal
 function openSearchModal() {
-    const searchModal = getElement('searchModal');
-    if (searchModal) {
-        searchModal.style.display = 'block';
-        getElement('searchInput')?.focus();
-    }
+    getElement('searchModal').style.display = 'block';
+    getElement('searchInput').value = '';
+    getElement('searchResults').innerHTML = '';
+    const navButtons = document.querySelectorAll('.bottom-nav a');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    getElement('searchButton').classList.add('active');
 }
 
 function closeSearchModal() {
-    const searchModal = getElement('searchModal');
-    const searchResults = getElement('searchResults');
-    if (searchModal && searchResults) {
-        searchModal.style.display = 'none';
-        searchResults.innerHTML = '';
-        getElement('searchInput').value = '';
-    }
+    getElement('searchModal').style.display = 'none';
 }
 
 function searchAnime() {
-    const query = getElement('searchInput')?.value.toLowerCase();
+    const query = getElement('searchInput').value.toLowerCase();
     const searchResults = getElement('searchResults');
-    if (!searchResults) return;
-
     searchResults.innerHTML = '';
-    const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(query) || video.genres.some(genre => genre.toLowerCase().includes(query)));
+
+    const filteredVideos = videos.filter(video => 
+        video.title.toLowerCase().includes(query) || 
+        video.genres.some(genre => genre.toLowerCase().includes(query))
+    );
 
     filteredVideos.forEach(video => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'search-result-item';
-        resultItem.innerHTML = `
-            <div class="thumbnail large" style="background-image: url('${isValidUrl(video.thumbnailImage) ? video.thumbnailImage : 'https://via.placeholder.com/180x225'}')"></div>
-            <div class="search-result-info">
-                <h3>${sanitizeInput(video.title)}</h3>
-                <div class="genres">${video.genres.map(genre => `<span>${sanitizeInput(genre)}</span>`).join('')}</div>
-                <div class="rating-year">
-                    <span>⭐ ${video.rating.toFixed(1)}</span>
-                    <span>${video.year}</span>
-                </div>
-            </div>
-        `;
-        resultItem.onclick = () => {
-            closeSearchModal();
-            openVideoModal(video);
-        };
+        const resultItem = createSearchResultItem(video);
         searchResults.appendChild(resultItem);
     });
 }
 
-// Settings Modal
+function createSearchResultItem(video) {
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    resultItem.innerHTML = `
+        <div class="thumbnail" style="background-image: url(${video.thumbnailImage})"></div>
+        <div class="search-result-info">
+            <h3>${video.title}</h3>
+            <div class="genres">${video.genres.map(genre => `<span>${genre}</span>`).join('')}</div>
+            <div class="rating-year">
+                <span><svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ${video.rating}</span>
+                <span>${video.year}</span>
+            </div>
+        </div>
+    `;
+    resultItem.onclick = () => openVideoModal(video);
+    return resultItem;
+}
+
 function openSettingsModal() {
-    const settingsModal = getElement('settingsModal');
-    if (settingsModal) {
-        settingsModal.style.display = 'block';
-    }
+    getElement('settingsModal').style.display = 'block';
+    const navButtons = document.querySelectorAll('.bottom-nav a');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    getElement('settingsButton').classList.add('active');
 }
 
 function closeSettingsModal() {
-    const settingsModal = getElement('settingsModal');
-    const requestError = getElement('requestError');
-    if (settingsModal && requestError) {
-        settingsModal.style.display = 'none';
-        requestError.style.display = 'none';
-        getElement('requestAnimeForm')?.reset();
-    }
+    getElement('settingsModal').style.display = 'none';
 }
 
-function renderAnimeRequests() {
-    const animeRequestList = getElement('animeRequestList');
-    if (!animeRequestList) return;
-
-    animeRequestList.innerHTML = '';
-    animeRequests.forEach((request, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${sanitizeInput(request.title)}</span>
-            <button class="delete-request-button" onclick="deleteAnimeRequest(${index})">Delete</button>
-        `;
-        animeRequestList.appendChild(li);
-    });
-}
-
-function requestAnime(event) {
-    event.preventDefault();
-    const requestTitle = sanitizeInput(getElement('requestTitle')?.value);
-    const requestComments = sanitizeInput(getElement('requestComments')?.value);
+function submitAnimeRequest() {
+    const title = getElement('requestTitle').value;
+    const comments = getElement('requestComments').value;
     const requestError = getElement('requestError');
 
-    if (!requestTitle || !requestError) return;
-
-    if (!requestTitle) {
+    if (!title) {
         requestError.textContent = 'Please enter an anime title.';
         requestError.style.display = 'block';
         return;
     }
 
-    animeRequests.push({ title: requestTitle, comments: requestComments });
-    safeLocalStorageSet('animeRequests', animeRequests);
-    renderAnimeRequests();
-    getElement('requestAnimeForm')?.reset();
+    animeRequests.push({ id: animeRequests.length + 1, title, comments });
+    getElement('requestAnimeForm').reset();
+    requestError.style.display = 'none';
+    updateAnimeRequestList();
 }
 
-function deleteAnimeRequest(index) {
-    animeRequests.splice(index, 1);
-    safeLocalStorageSet('animeRequests', animeRequests);
-    renderAnimeRequests();
+function updateAnimeRequestList() {
+    const animeRequestList = getElement('animeRequestList');
+    animeRequestList.innerHTML = '';
+    animeRequests.forEach(request => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${request.title}${request.comments ? `: ${request.comments}` : ''}</span>
+            <div>
+                <button class="delete-request-button" onclick="deleteAnimeRequest(${request.id})">Delete</button>
+            </div>
+        `;
+        animeRequestList.appendChild(li);
+    });
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    toggleSeasonField();
+function deleteAnimeRequest(requestId) {
+    animeRequests = animeRequests.filter(r => r.id !== requestId);
+    updateAnimeRequestList();
+}
 
-    const toggleViewBtn = getElement('toggleView');
-    if (toggleViewBtn) {
-        toggleViewBtn.onclick = toggleView;
+function showAdminSection(sectionId) {
+    const sections = ['addVideoSection', 'videoManagementSection', 'requestedMoviesSection'];
+    const buttons = ['addVideoMenu', 'videoManagementMenu', 'requestedMoviesMenu'];
+
+    sections.forEach(section => {
+        getElement(section).style.display = section === sectionId ? 'block' : 'none';
+    });
+
+    buttons.forEach(button => {
+        getElement(button).classList.toggle('active', button === `${sectionId.replace('Section', 'Menu')}`);
+    });
+}
+
+// Fullscreen Toggle
+function toggleFullScreen() {
+    const fullscreenToggleBtn = getElement('fullscreenToggle');
+    const body = document.body;
+
+    if (!fullscreenToggleBtn) return;
+
+    if (!document.fullscreenElement) {
+        // Enter fullscreen
+        if (body.requestFullscreen) {
+            body.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        }
+        body.classList.add('fullscreen');
+        fullscreenToggleBtn.textContent = 'Exit Full Screen';
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(err => {
+                console.error(`Error attempting to exit fullscreen: ${err.message}`);
+            });
+        }
+        body.classList.remove('fullscreen');
+        fullscreenToggleBtn.textContent = 'Enter Full Screen';
     }
 
-    const videoForm = getElement('videoForm');
-    if (videoForm) {
-        videoForm.onsubmit = addVideo;
-    }
+    // Force re-render of scrollable containers to fix stuck scrolling
+    setTimeout(() => {
+        const scrollableContainers = document.querySelectorAll(
+            '.modal-content, .settings-modal-content, .search-modal-content, .edit-modal-content, #userView, #tvShowsView, #adminView'
+        );
+        scrollableContainers.forEach(container => {
+            container.style.display = 'none';
+            container.offsetHeight; // Trigger reflow
+            container.style.display = '';
+        });
+    }, 100); // Small delay to ensure fullscreen transition completes
+}
 
-    const passwordForm = getElement('passwordForm');
-    if (passwordForm) {
-        passwordForm.onsubmit = (event) => {
-            event.preventDefault();
-            const password = getElement('adminPassword')?.value;
-            const passwordError = getElement('passwordError');
-
-            if (!passwordError) return;
-
-            if (password === ADMIN_PASSWORD) {
-                isAdminAuthenticated = true;
-                closePasswordModal();
-                toggleView();
-            } else {
-                passwordError.textContent = 'Incorrect password. Please try again.';
-                passwordError.style.display = 'block';
-            }
-        };
-    }
-
-    const requestAnimeForm = getElement('requestAnimeForm');
-    if (requestAnimeForm) {
-        requestAnimeForm.onsubmit = requestAnime;
+// Update fullscreen button text on fullscreen change
+document.addEventListener('fullscreenchange', () => {
+    const fullscreenToggleBtn = getElement('fullscreenToggle');
+    if (fullscreenToggleBtn) {
+        if (document.fullscreenElement) {
+            fullscreenToggleBtn.textContent = 'Exit Full Screen';
+            document.body.classList.add('fullscreen');
+        } else {
+            fullscreenToggleBtn.textContent = 'Enter Full Screen';
+            document.body.classList.remove('fullscreen');
+        }
     }
 });
+
+document.addEventListener('DOMContentLoaded', initializeApp);
