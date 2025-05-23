@@ -64,17 +64,17 @@ let videos = [
     }
 ];
 
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://pcwvvsdytizsnalzzznl.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
 let animeRequests = [];
 let currentSeason = 1;
 let currentEpisode = 1;
 let selectedVideo = null;
 
 function getElement(id) {
-    return document.getElementById(id);
+    const element = document.getElementById(id);
+    if (!element) {
+        console.warn(`Element with ID '${id}' not found`);
+    }
+    return element;
 }
 
 function initializeApp() {
@@ -213,31 +213,107 @@ function setupEventListeners() {
     const videoForm = getElement('videoForm');
     const passwordForm = getElement('passwordForm');
     const requestAnimeForm = getElement('requestAnimeForm');
+    const homeButton = getElement('homeButton');
+    const tvShowsButton = getElement('tvShowsButton');
+    const searchButton = getElement('searchButton');
+    const settingsButton = getElement('settingsButton');
+    const fullscreenToggle = getElement('fullscreenToggle');
+    const passwordModalClose = getElement('passwordModal')?.querySelector('.close');
+    const videoModalClose = getElement('videoModal')?.querySelector('.close');
+    const searchModalClose = getElement('searchModal')?.querySelector('.close');
+    const settingsModalClose = getElement('settingsModal')?.querySelector('.close');
+    const editModalClose = getElement('editModal')?.querySelector('.close');
+    const searchInput = getElement('searchInput');
+    const videoType = getElement('videoType');
+    const numSeasons = getElement('numSeasons');
 
-    toggleViewBtn.onclick = () => {
-        const currentView = getElement('adminView').style.display === 'none' ? 'user' : 'admin';
-        if (currentView === 'user') {
-            openPasswordModal();
-        } else {
-            showView('userView');
-            toggleViewBtn.textContent = 'Admin';
+    const addVideoMenu = getElement('addVideoMenu');
+    if (addVideoMenu) addVideoMenu.onclick = () => showAdminSection('addVideoSection');
+
+    const videoManagementMenu = getElement('videoManagementMenu');
+    if (videoManagementMenu) videoManagementMenu.onclick = () => showAdminSection('videoManagementSection');
+
+    const requestedMoviesMenu = getElement('requestedMoviesMenu');
+    if (requestedMoviesMenu) requestedMoviesMenu.onclick = () => showAdminSection('requestedMoviesSection');
+
+    if (toggleViewBtn) {
+        toggleViewBtn.onclick = () => {
+            const currentView = getElement('adminView').style.display === 'none' ? 'user' : 'admin';
+            if (currentView === 'user') {
+                openPasswordModal();
+            } else {
+                showView('userView');
+                // Set the admin icon when switching to user view
+                toggleViewBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="admin-icon">
+                        <path d="M399 384.2C376.9 345.8 335.4 320 288 320l-64 0c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z"/>
+                    </svg>`;
+                toggleViewBtn.title = 'Switch to Admin View';
+            }
+        };
+    }
+
+    if (videoForm) {
+        videoForm.onsubmit = (e) => {
+            e.preventDefault();
+            addVideo();
+        };
+    }
+
+    if (passwordForm) {
+        passwordForm.onsubmit = (e) => {
+            e.preventDefault();
+            checkAdminPassword();
+        };
+    }
+
+    if (requestAnimeForm) {
+        requestAnimeForm.onsubmit = (e) => {
+            e.preventDefault();
+            submitAnimeRequest();
+        };
+    }
+
+    if (homeButton) homeButton.onclick = () => showView('userView');
+    if (tvShowsButton) tvShowsButton.onclick = () => showView('tvShowsView');
+    if (searchButton) searchButton.onclick = openSearchModal;
+    if (settingsButton) settingsButton.onclick = openSettingsModal;
+    if (fullscreenToggle) fullscreenToggle.onclick = toggleFullScreen;
+    if (passwordModalClose) passwordModalClose.onclick = closePasswordModal;
+    if (videoModalClose) videoModalClose.onclick = closeVideoModal;
+    if (searchModalClose) searchModalClose.onclick = closeSearchModal;
+    if (settingsModalClose) settingsModalClose.onclick = closeSettingsModal;
+    if (editModalClose) editModalClose.onclick = closeEditModal;
+    if (searchInput) searchInput.oninput = searchAnime;
+    if (videoType) videoType.onchange = toggleSeasonField;
+    if (numSeasons) numSeasons.onchange = updateSeasonInputs;
+
+    /*
+    const profilePictureInput = getElement('profilePictureInput');
+    if (profilePictureInput) profilePictureInput.onchange = handleProfilePictureUpload;
+
+    const removeProfilePictureBtn = getElement('removeProfilePicture');
+    if (removeProfilePictureBtn) removeProfilePictureBtn.onclick = removeProfilePicture;
+    */
+
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal') && !event.target.closest('#toggleView')) {
+            closeVideoModal();
+            closePasswordModal();
+            closeEditModal();
         }
-    };
+        if (event.target.classList.contains('search-modal')) closeSearchModal();
+        if (event.target.classList.contains('settings-modal')) closeSettingsModal();
+    });
 
-    videoForm.onsubmit = (e) => {
-        e.preventDefault();
-        addVideo();
-    };
-
-    passwordForm.onsubmit = (e) => {
-        e.preventDefault();
-        checkAdminPassword();
-    };
-
-    requestAnimeForm.onsubmit = (e) => {
-        e.preventDefault();
-        submitAnimeRequest();
-    };
+    // Initialize the button with the admin icon on page load
+    if (toggleViewBtn) {
+        toggleViewBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="admin-icon">
+                <path d="M399 384.2C376.9 345.8 335.4 320 288 320l-64 0c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z"/>
+            </svg>`;
+        toggleViewBtn.title = 'Switch to Admin View';
+    }
 }
 
 function openPasswordModal() {
@@ -253,9 +329,17 @@ function closePasswordModal() {
 function checkAdminPassword() {
     const password = getElement('adminPassword').value;
     const passwordError = getElement('passwordError');
+    const toggleViewBtn = getElement('toggleView');
     if (password === 'admin123') {
         showView('adminView');
-        getElement('toggleView').textContent = 'User';
+        // Set the user icon when switching to admin view
+        if (toggleViewBtn) {
+            toggleViewBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="user-icon">
+                    <path d="M471.6 32H40.4C18.1 32 0 50.1 0 72.4v367.2C0 461.9 18.1 480 40.4 480h431.2c22.3 0 40.4-18.1 40.4-40.4V72.4C512 50.1 493.9 32 471.6 32zM464 432H48V80h416v352z"/>
+                </svg>`;
+            toggleViewBtn.title = 'Switch to User View';
+        }
         closePasswordModal();
     } else {
         passwordError.textContent = 'Incorrect password. Please try again.';
@@ -480,13 +564,15 @@ function updateEditSeasonInputs(video = null) {
         seasonDiv.innerHTML = `<h4>Season ${i}</h4>`;
         const episodeInput = document.createElement('div');
         episodeInput.className = 'episode-input';
+
         const existingSeason = video && video.seasons && video.seasons[i - 1];
-        const episode = existingSeason && existingSeason.episodes && existingSeason.episodes[0];
+        const episode = existingSeason && existingSeason.episodes && existingSeason.episodes.length > 0 ? existingSeason.episodes[0] : null;
+
         episodeInput.innerHTML = `
             <label>Episode Name:</label>
             <input type="text" class="episode-name" value="${episode ? episode.name : ''}" required>
             <label>Episode Thumbnail URL:</label>
-            <input type="text" class="episode-thumbnail" value="${episode ? episode.thumbnail : ''}">
+            <input type="text" class="episode-thumbnail" value="${episode && episode.thumbnail ? episode.thumbnail : ''}">
             <label>Episode Embed Code:</label>
             <textarea class="episode-embed" required>${episode ? episode.embedCode : ''}</textarea>
             <label>Episode Duration (e.g., 25m):</label>
@@ -799,7 +885,6 @@ function showAdminSection(sectionId) {
     });
 }
 
-// Fullscreen Toggle
 function toggleFullScreen() {
     const fullscreenToggleBtn = getElement('fullscreenToggle');
     const body = document.body;
@@ -807,7 +892,6 @@ function toggleFullScreen() {
     if (!fullscreenToggleBtn) return;
 
     if (!document.fullscreenElement) {
-        // Enter fullscreen
         if (body.requestFullscreen) {
             body.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable fullscreen: ${err.message}`);
@@ -816,7 +900,6 @@ function toggleFullScreen() {
         body.classList.add('fullscreen');
         fullscreenToggleBtn.textContent = 'Exit Full Screen';
     } else {
-        // Exit fullscreen
         if (document.exitFullscreen) {
             document.exitFullscreen().catch(err => {
                 console.error(`Error attempting to exit fullscreen: ${err.message}`);
@@ -826,20 +909,18 @@ function toggleFullScreen() {
         fullscreenToggleBtn.textContent = 'Enter Full Screen';
     }
 
-    // Force re-render of scrollable containers to fix stuck scrolling
     setTimeout(() => {
         const scrollableContainers = document.querySelectorAll(
             '.modal-content, .settings-modal-content, .search-modal-content, .edit-modal-content, #userView, #tvShowsView, #adminView'
         );
         scrollableContainers.forEach(container => {
             container.style.display = 'none';
-            container.offsetHeight; // Trigger reflow
+            container.offsetHeight;
             container.style.display = '';
         });
-    }, 100); // Small delay to ensure fullscreen transition completes
+    }, 100);
 }
 
-// Update fullscreen button text on fullscreen change
 document.addEventListener('fullscreenchange', () => {
     const fullscreenToggleBtn = getElement('fullscreenToggle');
     if (fullscreenToggleBtn) {
@@ -852,5 +933,49 @@ document.addEventListener('fullscreenchange', () => {
         }
     }
 });
+
+function handleProfilePictureUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+        console.error('No file selected for upload');
+        return;
+    }
+    try {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const profilePicture = getElement('profilePicture');
+            if (profilePicture) {
+                profilePicture.src = reader.result;
+                profilePicture.style.display = 'block';
+                const profilePictureContainer = getElement('profilePictureContainer');
+                if (profilePictureContainer) profilePictureContainer.classList.add('has-image');
+                try {
+                    localStorage.setItem('profilePicture', reader.result);
+                } catch (e) {
+                    console.warn('localStorage access denied, skipping save:', e);
+                }
+            }
+        };
+        reader.onerror = () => console.error('Error reading file:', reader.error);
+        reader.readAsDataURL(file);
+    } catch (e) {
+        console.error('Error in FileReader:', e);
+    }
+}
+
+function removeProfilePicture() {
+    const profilePicture = getElement('profilePicture');
+    if (profilePicture) {
+        profilePicture.src = '';
+        profilePicture.style.display = 'none';
+    }
+    const profilePictureContainer = getElement('profilePictureContainer');
+    if (profilePictureContainer) profilePictureContainer.classList.remove('has-image');
+    try {
+        localStorage.removeItem('profilePicture');
+    } catch (e) {
+        console.warn('localStorage access denied, skipping removal:', e);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', initializeApp);
