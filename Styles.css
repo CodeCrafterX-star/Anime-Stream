@@ -39,16 +39,31 @@ h1 {
     color: #FFFFFF;
     border: none;
     border-radius: 5px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
     cursor: pointer;
     transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
 }
 
 #toggleView:hover {
     background: #B20710;
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
+}
+
+.admin-icon {
+    width: 20px;
+    height: 20px;
+    fill: #FFFFFF;
+    transition: fill 0.3s ease;
+}
+
+#toggleView:hover .admin-icon {
+    fill: #FFFFFF;
 }
 
 .featured {
@@ -231,20 +246,20 @@ h1 {
     padding: 0.5rem 1.2rem;
     transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
-    border-radius: 4px; /* Subtle rounding for sharp, square-like edges */
+    border-radius: 4px;
 }
 
 .bottom-nav a.active {
     color: #FFFFFF;
     background: #E50914;
-    border-radius: 4px; /* Consistent rounding when active */
+    border-radius: 4px;
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
 
 .bottom-nav a:hover {
     background: #B20710;
-    border-radius: 4px; /* Consistent rounding on hover */
+    border-radius: 4px;
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
@@ -356,7 +371,7 @@ h1 {
     background: #2F2F2F;
     color: #FFFFFF;
     border: none;
-    border-radius: 4px; /* Match Home button's square-like shape */
+    border-radius: 4px;
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     cursor: pointer;
@@ -365,12 +380,12 @@ h1 {
 
 .category-btn.active {
     background: #E50914;
-    border-radius: 4px; /* Consistent shape when active */
+    border-radius: 4px;
 }
 
 .category-btn:hover {
     background: #B20710;
-    border-radius: 4px; /* Consistent shape on hover */
+    border-radius: 4px;
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
@@ -445,7 +460,7 @@ h1 {
     left: 0;
     width: 100%;
     height: 100vh;
-    background: #0A0A0A; /* Solid, darker background */
+    background: #0A0A0A;
     z-index: 30;
     overflow-y: auto;
     padding: 0;
@@ -1360,12 +1375,12 @@ body.fullscreen {
 
 /* Ensure bottom navigation remains visible in fullscreen */
 body.fullscreen .bottom-nav {
-    display: flex; /* Keep the bottom navigation visible */
+    display: flex;
     position: fixed;
     bottom: 0;
     width: 100%;
     background: #000000;
-    z-index: 10000; /* Ensure it stays above other content */
+    z-index: 10000;
 }
 
 /* Ensure modals are scrollable in fullscreen */
@@ -1375,7 +1390,7 @@ body.fullscreen .search-modal,
 body.fullscreen .edit-modal {
     height: 100vh;
     padding: 0;
-    overflow-y: auto; /* Enable scrolling for modals */
+    overflow-y: auto;
 }
 
 /* Adjust modal content for fullscreen */
@@ -1385,7 +1400,7 @@ body.fullscreen .search-modal-content,
 body.fullscreen .edit-modal-content {
     min-height: 100vh;
     padding: 1rem;
-    overflow-y: auto; /* Allow scrolling within modal content */
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -1393,18 +1408,18 @@ body.fullscreen .edit-modal-content {
 body.fullscreen #userView,
 body.fullscreen #tvShowsView,
 body.fullscreen #adminView {
-    overflow-y: auto; /* Allow scrolling in main views */
+    overflow-y: auto;
     height: 100vh;
-    padding-bottom: 70px; /* Add padding to account for bottom-nav height */
+    padding-bottom: 70px;
 }
 
 /* Hide scrollbars completely in fullscreen */
 body.fullscreen * {
-    scrollbar-width: none; /* Firefox: Hide scrollbar */
+    scrollbar-width: none;
 }
 
 body.fullscreen *::-webkit-scrollbar {
-    display: none; /* WebKit browsers (Chrome, Safari): Hide scrollbar */
+    display: none;
 }
 
 @media (max-width: 600px) {
@@ -1500,7 +1515,6 @@ body.fullscreen *::-webkit-scrollbar {
         max-width: 320px;
     }
 
-    /* Adjust modal padding for smaller screens */
     body.fullscreen .modal-content,
     body.fullscreen .settings-modal-content,
     body.fullscreen .search-modal-content,
@@ -1508,7 +1522,6 @@ body.fullscreen *::-webkit-scrollbar {
         padding: 0.5rem;
     }
 
-    /* Ensure bottom-nav remains visible and styled on small screens */
     body.fullscreen .bottom-nav {
         display: flex;
         padding: 0.5rem 0;
@@ -1914,26 +1927,4 @@ body.fullscreen *::-webkit-scrollbar {
     stroke: #E50914;
     stroke-width: 2.8;
     stroke-linecap: round;
-    transition: stroke-dasharray 0.3s ease;
-}
-
-.progress-circle .percentage {
-    fill: #FFFFFF;
-    font-size: 0.4rem;
-    text-anchor: middle;
-    dominant-baseline: central;
-}
-
-.episode-description {
-    font-size: 0.9rem;
-    color: #B3B3B3;
-    margin: 0;
-    line-height: 1.3;
-    text-align: center;
-}
-
-/* Remove old play button and episode number styles */
-.episode-number,
-.episode-play-button {
-    display: none;
 }
