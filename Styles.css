@@ -231,19 +231,20 @@ h1 {
     padding: 0.5rem 1.2rem;
     transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
+    border-radius: 4px; /* Subtle rounding for sharp, square-like edges */
 }
 
 .bottom-nav a.active {
     color: #FFFFFF;
     background: #E50914;
-    border-radius: 0;
+    border-radius: 4px; /* Consistent rounding when active */
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
 
 .bottom-nav a:hover {
     background: #B20710;
-    border-radius: 0;
+    border-radius: 4px; /* Consistent rounding on hover */
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
@@ -355,7 +356,7 @@ h1 {
     background: #2F2F2F;
     color: #FFFFFF;
     border: none;
-    border-radius: 20px;
+    border-radius: 4px; /* Match Home button's square-like shape */
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     cursor: pointer;
@@ -364,10 +365,12 @@ h1 {
 
 .category-btn.active {
     background: #E50914;
+    border-radius: 4px; /* Consistent shape when active */
 }
 
 .category-btn:hover {
     background: #B20710;
+    border-radius: 4px; /* Consistent shape on hover */
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
 }
@@ -442,7 +445,7 @@ h1 {
     left: 0;
     width: 100%;
     height: 100vh;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(0, 0, 0, 0.95));
+    background: #0A0A0A; /* Solid, darker background */
     z-index: 30;
     overflow-y: auto;
     padding: 0;
@@ -1085,7 +1088,7 @@ h1 {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.profile-section, .request-anime-section {
+.profile-section, .request-anime-section, .fullscreen-section {
     background: #141414;
     border-radius: 12px;
     padding: 2rem;
@@ -1096,7 +1099,7 @@ h1 {
     border: 1px solid #2F2F2F;
 }
 
-.profile-section h3, .request-anime-section h3 {
+.profile-section h3, .request-anime-section h3, .fullscreen-section h3 {
     font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 1.2rem;
@@ -1297,6 +1300,113 @@ h1 {
     animation: fadeIn 0.3s ease;
 }
 
+/* Fullscreen Section Styles */
+.fullscreen-section {
+    background: #141414;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2F2F2F;
+}
+
+.fullscreen-section h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+#fullscreenToggle {
+    padding: 1rem;
+    background: #E50914;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+    display: block;
+    margin: 0 auto;
+}
+
+#fullscreenToggle:hover {
+    background: #B20710;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(229, 9, 20, 0.3);
+}
+
+#fullscreenToggle:active {
+    transform: scale(0.98);
+}
+
+/* Fullscreen Mode */
+body.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    z-index: 9999;
+}
+
+/* Ensure bottom navigation remains visible in fullscreen */
+body.fullscreen .bottom-nav {
+    display: flex; /* Keep the bottom navigation visible */
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #000000;
+    z-index: 10000; /* Ensure it stays above other content */
+}
+
+/* Ensure modals are scrollable in fullscreen */
+body.fullscreen .modal,
+body.fullscreen .settings-modal,
+body.fullscreen .search-modal,
+body.fullscreen .edit-modal {
+    height: 100vh;
+    padding: 0;
+    overflow-y: auto; /* Enable scrolling for modals */
+}
+
+/* Adjust modal content for fullscreen */
+body.fullscreen .modal-content,
+body.fullscreen .settings-modal-content,
+body.fullscreen .search-modal-content,
+body.fullscreen .edit-modal-content {
+    min-height: 100vh;
+    padding: 1rem;
+    overflow-y: auto; /* Allow scrolling within modal content */
+    box-sizing: border-box;
+}
+
+/* Ensure main content is scrollable in fullscreen */
+body.fullscreen #userView,
+body.fullscreen #tvShowsView,
+body.fullscreen #adminView {
+    overflow-y: auto; /* Allow scrolling in main views */
+    height: 100vh;
+    padding-bottom: 70px; /* Add padding to account for bottom-nav height */
+}
+
+/* Hide scrollbars completely in fullscreen */
+body.fullscreen * {
+    scrollbar-width: none; /* Firefox: Hide scrollbar */
+}
+
+body.fullscreen *::-webkit-scrollbar {
+    display: none; /* WebKit browsers (Chrome, Safari): Hide scrollbar */
+}
+
 @media (max-width: 600px) {
     .settings-modal-content {
         padding: 1rem 0.5rem;
@@ -1307,12 +1417,12 @@ h1 {
         margin-bottom: 1.5rem;
     }
 
-    .profile-section, .request-anime-section {
+    .profile-section, .request-anime-section, .fullscreen-section {
         padding: 1.5rem;
         width: 95%;
     }
 
-    .profile-section h3, .request-anime-section h3 {
+    .profile-section h3, .request-anime-section h3, .fullscreen-section h3 {
         font-size: 1.3rem;
         margin-bottom: 1rem;
     }
@@ -1372,6 +1482,36 @@ h1 {
     #requestError {
         font-size: 0.9rem;
         padding: 0.6rem;
+    }
+
+    .fullscreen-section {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .fullscreen-section h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    #fullscreenToggle {
+        font-size: 1rem;
+        padding: 0.8rem;
+        max-width: 320px;
+    }
+
+    /* Adjust modal padding for smaller screens */
+    body.fullscreen .modal-content,
+    body.fullscreen .settings-modal-content,
+    body.fullscreen .search-modal-content,
+    body.fullscreen .edit-modal-content {
+        padding: 0.5rem;
+    }
+
+    /* Ensure bottom-nav remains visible and styled on small screens */
+    body.fullscreen .bottom-nav {
+        display: flex;
+        padding: 0.5rem 0;
     }
 }
 
@@ -1508,7 +1648,7 @@ h1 {
     cursor: pointer;
     transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
-    max-width: 400px; /* Doubled from 200px */
+    max-width: 400px;
     margin: 0 auto;
 }
 
@@ -1586,8 +1726,8 @@ h1 {
     cursor: pointer;
     transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     margin: 0 auto;
-    width: 100%; /* Ensure full width within max-width */
-    max-width: 400px; /* Matches doubled width of season-toggle-button */
+    width: 100%;
+    max-width: 400px;
 }
 
 .play-button::before {
@@ -1623,7 +1763,7 @@ h1 {
     .play-button {
         padding: 0.8rem;
         font-size: 1rem;
-        max-width: 320px; /* Doubled from 160px */
+        max-width: 320px;
     }
 
     .season-option-button {
